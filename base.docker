@@ -1,10 +1,17 @@
 # Taken from https://github.com/openai/universe/blob/master/Dockerfile
 # (no official image exists yet, once it does it would be better to include it
 # directly)
-FROM tensorflow/tensorflow:latest-py3
-RUN add-apt-repository -y ppa:ubuntu-lxc/lxd-stable
+# FROM tensorflow/tensorflow:latest-py3
+FROM tensorflow/tensorflow:1.13.2-py3
+RUN apt-get update && apt-get install -y software-properties-common
+RUN apt-add-repository "deb http://archive.ubuntu.com/ubuntu xenial-backports universe restricted multiverse main"
+RUN apt-get update
+# RUN add-apt-repository -y ppa:ubuntu-lxc/lxd-stable
+RUN apt-get install -yt xenial-backports lxd lxd-client
+ENV TZ=Europe/Moscow
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update \
-    && apt-get install -y libav-tools \
+    && apt-get install -y ffmpeg \
     python3-numpy \
     python3-scipy \
     python3-setuptools \
@@ -40,7 +47,28 @@ RUN python3 get-pip.py
     && ln -sf /usr/bin/python3 /usr/local/bin/python \
     && pip install -U pip
 
+# Copy MuJoCo
+COPY ./mjpro150_linux.zip /root/.mujoco/
+RUN unzip /root/.mujoco/mjpro150_linux.zip -d /root/.mujoco/ && rm /root/.mujoco/mjpro150_linux.zip
+COPY ./mjkey.txt /root/.mujoco/mjpro150/bin/
+COPY ./mjkey.txt /root/.mujoco/
+RUN ls /root/.mujoco/mjpro150/bin/
+RUN ls /root/.mujoco/
+
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/root/.mujoco/mjpro150/bin
+
 # Install gym
+RUN pip install lockfile cffi Cython
+RUN apt-get install -y libosmesa6-dev
+RUN apt-get install -y libglew-dev
+RUN apt-get install patchelf
+RUN apt-get install -y libglfw3-dev
+# RUN cp /etc/apt/sources.list /etc/apt/sources.list~
+#RUN sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
+# RUN sed -Ei 's/^# deb /deb /' /etc/apt/sources.list
+#RUN cat /etc/apt/sources.list
+#RUN apt-get update && apt-get build-dep glfw
+#RUN apt-get install libglfw-dev
 RUN pip install gym[all]
 
 # Get the faster VNC driver
@@ -51,7 +79,7 @@ ENV UNIVERSE_VNCDRIVER='go'
 
 WORKDIR /usr/local/
 
-RUN pip install universe six opencv-python pygame pydotplus sklearn pandas tqdm
+RUN pip install universe six opencv-python pygame pydotplus sklearn pandas tqdm notebook matplotlib
 
 WORKDIR /mnt/human-rl/
 
