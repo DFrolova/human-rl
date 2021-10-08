@@ -381,13 +381,14 @@ class TensorflowClassifier:
         return (time.time() - start_time) / times
 
     def save_checkpoint(self, checkpoint_name):
-        tf.get_collection_ref("threshold")[:] = [float(self.threshold)]
-        tf.get_collection_ref("features")[:] = self.features.values()
-        tf.get_collection_ref("loss")[:] = [self.loss]
-        tf.get_collection_ref("prediction")[:] = [self.prediction]
+        print('saving to', checkpoint_name)
+        tf.compat.v1.get_collection_ref("threshold")[:] = [float(self.threshold)]
+        tf.compat.v1.get_collection_ref("features")[:] = self.features.values()
+        tf.compat.v1.get_collection_ref("loss")[:] = [self.loss]
+        tf.compat.v1.get_collection_ref("prediction")[:] = [self.prediction]
 
         os.makedirs(os.path.dirname(checkpoint_name), exist_ok=True)
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
         saver.save(tf.get_default_session(), checkpoint_name)
 
         with open(os.path.join(os.path.dirname(checkpoint_name), "hparams.txt"), "w") as f:
@@ -1144,7 +1145,7 @@ if __name__ == "__main__":
     import pong_catastrophe
     from pong_catastrophe import PongClassifierLabeller, PongBlockerLabeller
 
-    episode_paths = frame.episode_paths("logs/PongDeterministic-v3-Episodes")
+    episode_paths = frame.episode_paths("../logs/pong/labels")
     hparams = TensorflowClassifierHparams(
         use_image=False,
         use_observation=True,
@@ -1162,6 +1163,6 @@ if __name__ == "__main__":
         config.gpu_options.allow_growth = True
         sess = tf.Session(graph=g, config=config)
         with sess.as_default():
-            classifier.fit(*datasets, steps=100, logdir='/tmp/foo/blockerfast', log_every=10)
+            classifier.fit(*datasets, steps=100, logdir='../logs/pong/classifier', log_every=1)
             # classifier.save(checkpoint_name="/tmp/foo/blocker/0.ckpt")
         sess.close()

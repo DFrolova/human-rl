@@ -2,7 +2,8 @@
 # (no official image exists yet, once it does it would be better to include it
 # directly)
 # FROM tensorflow/tensorflow:latest-py3
-FROM tensorflow/tensorflow:1.13.2-py3
+# FROM tensorflow/tensorflow:1.13.2-py3
+FROM tensorflow/tensorflow:1.15.5-py3
 RUN apt-get update && apt-get install -y software-properties-common
 RUN apt-add-repository "deb http://archive.ubuntu.com/ubuntu xenial-backports universe restricted multiverse main"
 RUN apt-get update
@@ -81,6 +82,8 @@ WORKDIR /usr/local/
 
 RUN pip install universe six opencv-python pygame pydotplus sklearn pandas tqdm notebook matplotlib
 
+RUN apt-get install -y libqt5gui5
+
 WORKDIR /mnt/human-rl/
 
 RUN mkdir ~/.vnc && \
@@ -90,6 +93,7 @@ RUN x11vnc -storepasswd "openai" ~/.vnc/passwd
 
 ENV HISTFILE="/mnt/human-rl/history"
 ENV DISPLAY=:20
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/python3.6/dist-packages/cv2/qt/plugins/platforms/
 
 ADD docker/.bashrc usr/local/.bashrc
 RUN cat usr/local/.bashrc >> ~/.bashrc

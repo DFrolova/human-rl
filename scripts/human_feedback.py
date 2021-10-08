@@ -276,6 +276,8 @@ def setup_for_ep(episode_path, episode, output_dir=None, dry_run=True):
         action_set = [0, 1, 3, 4, 11, 12]
     if "action_set" in episode.info:
         action_set = episode.info["action_set"]
+        
+    print('setup for ep', output_dir, output_filename)
     return output_filename, action_set, should_skip
 
 
@@ -438,6 +440,7 @@ def main():
     K_BLOCK = ord('b')
     K_SAVE_VIDEO = ord('v')
     K_ESC = ord('\x1b')  # esc
+    print('K_ESC code:', K_ESC)
     K_SKIP = ord('s')
     K_REMOVE_LABEL = ord('r')
     K_NONE = -1 & 0xFF
@@ -478,7 +481,14 @@ def main():
         episodes_iter = Episodes(args.frames_dir, transform_func)
         viewer_state = ViewerState(output_dir=args.output_dir)
 
+
+    print('args.output_dir', args.output_dir)
+    print('viewer_state.output_filename', viewer_state.output_filename)
     for episode_path, episode, viewer_state.frame_index in episodes_iter:
+        print('Episode_path:', episode_path)
+        print('episode', episode)
+        print('viewer_state.frame_index', viewer_state.frame_index)
+        
         if episode is None:
             print('Error: no episode')
             continue
@@ -549,6 +559,7 @@ def main():
 
             cv2.imshow('frame', img)
             k = cv2.waitKey(viewer_state.delay) & 0xFF
+            print('pressed code:', k)
             if args.online and k not in online_key_set:
                 print("Key '{}' not supported in online mode; "
                       "if you want to support it, add it to the keyset.".format(chr(k)))
@@ -560,10 +571,16 @@ def main():
                     print('Exiting...')
                     print('Killing A3C...')
                     call(['tmux', 'kill-session', '-t', 'a3c'])
-                # if save:
-                #     print("Writing episode {} to {}".format(episode_num, args.frames_dir))
-                #     save_labels(directory=args.frames_dir, episode=episode, episode_num=episode_num, frames=frames)
-                # cv2.destroyAllWindows()
+                all_label_files = [int(dir_name.split('e')[-1].split('.pkl')[0]) for dir_name in os.listdir(args.output_dir)]
+                if len(all_label_files) == 0:
+                    max_label_num = -1
+                else:
+                    max_label_num = max(all_label_files)
+                output_filename = os.path.join(args.output_dir, 'e' + str(max_label_num + 1)) + '.pkl.gz'
+                if viewer_state.save:
+                    print("Writing episode {} to {}".format(viewer_state.episode_num_in_session, args.output_dir))
+                    save_labels(filename=output_filename, episode=episode, frames=frames)
+                cv2.destroyAllWindows()
             elif k == K_CATASTROPHE and args.label_mode == "catastrophe":  # 'c'
                 print('catastrophe!')
                 viewer_state.current_frame.set_label("c")
@@ -661,6 +678,8 @@ def main():
                 if not viewer_state.paused:
                     viewer_state.advance(online=args.online)
 
+
+        print('ready to save frame')
         if viewer_state.save and not args.dry_run:
             if viewer_state.output_filename is not None:
                 print('Saving to file: {}'.format(viewer_state.output_filename))

@@ -1,4 +1,4 @@
-FROM base
+FROM base_new
 
 RUN pip install git+https://github.com/vladfi1/PyGame-Learning-Environment.git
 RUN pip install git+https://github.com/vladfi1/gym-ple.git

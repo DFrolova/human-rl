@@ -151,7 +151,7 @@ def generate_frames_with_catastrophe_penalty():
     #sleep_time = 200
     classifier_file = save_classifier_path + '/0/final.ckpt'
     logdir = 'logs/pong_test_with_penalty'
-    run("""python train.py --num-workers 16 --env-id Pong --log-dir {logdir} --catastrophe_reward -1  --classifier_file {classifier_file}  --catastrophe_type 1""".format(logdir=logdir, classifier_file=classifier_file))
+    run("""python train.py --num-workers 1 --env-id Pong --log-dir {logdir} --catastrophe_reward -1  --classifier_file {classifier_file}  --catastrophe_type 1""".format(logdir=logdir, classifier_file=classifier_file))
     
 
 if __name__ == "__main__":

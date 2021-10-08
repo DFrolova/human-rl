@@ -226,11 +226,19 @@ class PongBlockerLabeller(object):
             [is_catastrophe(frame.image) for frame in episode.frames if frame.action is not None])
         # should_block_array = np.array([should_block(frame.image, frame.action) for frame in episode.frames])
 
-        labels = np.full(len(episode.frames), fill_value=False, dtype=np.bool)
-        mask = np.full(len(episode.frames), fill_value=True, dtype=np.bool)
+	# CHANGED
+        # labels = np.full(len(episode.frames), fill_value=False, dtype=np.bool)
+        # mask = np.full(len(episode.frames), fill_value=True, dtype=np.bool)
+        
+        labels = np.full(len(is_catastrophe_array), fill_value=False, dtype=np.bool)
+        mask = np.full(len(is_catastrophe_array), fill_value=True, dtype=np.bool)
+        
+        print(len(labels), len(mask))
 
-        for i in range(len(episode.frames)):
-            if i + self.block_radius + 1 >= len(episode.frames):
+        # CHANGED
+        # for i in range(len(episode.frames)):
+        for i in range(len(is_catastrophe_array)):
+            if i + self.block_radius + 1 >= len(is_catastrophe_array): # CHANGED len(episode.frames):
                 mask[i] = False
                 continue
             if is_catastrophe_array[i]:
