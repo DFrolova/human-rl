@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 use_tf12_api = distutils.version.LooseVersion(
-    tf.VERSION) >= distutils.version.LooseVersion('0.12.0')
+    tf.version.VERSION) >= distutils.version.LooseVersion('0.12.0')
 
 
 def discount(x, gamma):

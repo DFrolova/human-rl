@@ -9,6 +9,6 @@ in docker do:
 cd universe_starter_agent
 python train.py --num-workers=1 --online True --online_blocking_mode action_pruning --log-dir ../logs/pong && sleep 3 && tail -f ../logs/pong/logs/w-0.txt 
 
-
+python train.py --num-workers=4 --env-id Pong --log-dir=../logs/pong_new/ --catastrophe_reward -1 --blocker_file ../models/pong/b2/0/final.ckpt --catastrophe_type 1 --blocking_mode action_replacement - worked
 
 

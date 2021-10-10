@@ -17,14 +17,14 @@ from hparams import add_hparams, get_hparams
 from humanrl import frame
 
 use_tf12_api = distutils.version.LooseVersion(
-    tf.VERSION) >= distutils.version.LooseVersion('0.12.0')
+    tf.version.VERSION) >= distutils.version.LooseVersion('0.12.0')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
 # Disables write_meta_graph argument, which freezes entire process and is mostly useless.
-class FastSaver(tf.train.Saver):
+class FastSaver(tf.compat.v1.train.Saver):
     def save(self,
              sess,
              save_path,
@@ -185,21 +185,21 @@ Setting up Tensorflow for data parallel work
     signal.signal(signal.SIGTERM, shutdown)
 
     if args.job_name == "worker":
-        server = tf.train.Server(
+        server = tf.distribute.Server(
             cluster,
             job_name="worker",
             task_index=args.task,
-            config=tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=2))
+            config=tf.compat.v1.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=2))
         run(args, server)
     else:
         server = tf.train.Server(
             cluster,
             job_name="ps",
             task_index=args.task,
-            config=tf.ConfigProto(device_filters=["/job:ps"]))
+            config=tf.compat.v1.ConfigProto(device_filters=["/job:ps"]))
         while True:
             time.sleep(1000)
 
 
 if __name__ == "__main__":
-    tf.app.run()
+    tf.compat.v1.app.run()
