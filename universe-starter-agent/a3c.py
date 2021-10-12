@@ -156,7 +156,7 @@ runner appends the policy to the queue.
             last_features = features
 
             if info:
-                summary = tf.Summary()
+                summary = tf.compat.v1.Summary()
                 for k, v in info.items():
                     summary.value.add(tag=k, simple_value=float(v))
                 summary_writer.add_summary(summary, policy.global_step.eval())

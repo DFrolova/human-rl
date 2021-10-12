@@ -269,16 +269,16 @@ class TensorflowClassifier:
         last_mistake_step = 0
         start_time = time.time()
         if sess is None:
-            sess = tf.get_default_session()
+            sess = tf.compat.v1.get_default_session()
         training_summary_writer, validation_summary_writer, extra_summary_writer = None, None, None
         if logdir is not None:
-            training_summary_writer = tf.summary.FileWriter(
-                os.path.join(logdir, "Training"), graph=tf.get_default_graph())
-            validation_summary_writer = tf.summary.FileWriter(os.path.join(logdir, "Validation"))
+            training_summary_writer = tf.compat.v1.summary.FileWriter(
+                os.path.join(logdir, "Training"), graph=tf.compat.v1.get_default_graph())
+            validation_summary_writer = tf.compat.v1.summary.FileWriter(os.path.join(logdir, "Validation"))
             if X_extra is not None:
-                extra_summary_writer = tf.summary.FileWriter(os.path.join(logdir, "Extra"))
+                extra_summary_writer = tf.compat.v1.summary.FileWriter(os.path.join(logdir, "Extra"))
             os.makedirs(os.path.join(logdir, "Training", "mistakes"), exist_ok=True)
-        tf.global_variables_initializer().run()
+        tf.compat.v1.global_variables_initializer().run()
 
         timing_last_i = 0
         timing = defaultdict(lambda: 0.0)
@@ -389,7 +389,7 @@ class TensorflowClassifier:
 
         os.makedirs(os.path.dirname(checkpoint_name), exist_ok=True)
         saver = tf.compat.v1.train.Saver()
-        saver.save(tf.get_default_session(), checkpoint_name)
+        saver.save(tf.compat.v1.get_default_session(), checkpoint_name)
 
         with open(os.path.join(os.path.dirname(checkpoint_name), "hparams.txt"), "w") as f:
             f.write(repr(self.hparams.__dict__))
@@ -408,7 +408,7 @@ class TensorflowClassifier:
         feed_dict[self.labels] = y
         for key, tensor in self.features.items():
             feed_dict[tensor] = X[key]
-        prediction, loss = tf.get_default_session().run(
+        prediction, loss = tf.compat.v1.get_default_session().run(
             [self.prediction, self.loss], feed_dict=feed_dict)
         return np.reshape(prediction, [-1]), loss
 

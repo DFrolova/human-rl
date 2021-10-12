@@ -12,7 +12,7 @@ from gym.spaces.box import Box
 import cv2
 import universe
 #import gym_ple
-from humanrl import pacman, pong_catastrophe, freeway_catastrophe
+from humanrl import pacman, pong_catastrophe
 from humanrl.catastrophe_wrapper import CatastropheWrapper
 from humanrl.classifier_tf import (SavedCatastropheBlockerTensorflow,
                                    SavedCatastropheClassifierTensorflow)
@@ -137,17 +137,12 @@ def create_env(env_id,
             if catastrophe_type == "1":
                 safe_action_mapping = "SpaceInvaders"
                 
-        if env_id == "Freeway":
-            if catastrophe_type == "1":
-                classifier_baseline = freeway_catastrophe.CatastropheClassifierHeuristic(**kwargs)
-                location = "bottom"
-                if "location" in kwargs:
-                    location = kwargs["location"]
-                allowed_actions_heuristic = lambda observation: freeway_catastrophe.allowed_actions_heuristic(observation, location=location)
-                if classifier is None:
-                    classifier = classifier_baseline
-                if blocker is None:
-                    blocker = freeway_catastrophe.CatastropheBlockerHeuristic(**kwargs)
+        print('clf', classifier)
+        print('blk', blocker)
+        print('clf_baseline', classifier_baseline)
+        print('allowed_actions_heuristic', allowed_actions_heuristic)
+        print('safe_action_mapping', safe_action_mapping)
+        print('kwargs', kwargs)
 
         env = CatastropheWrapper(
             env,
