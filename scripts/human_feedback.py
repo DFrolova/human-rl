@@ -258,6 +258,8 @@ def setup_for_ep(episode_path, episode, output_dir=None, dry_run=True):
         tuple (output_filename, action_set, should_skip)
         """
 
+    print('setup for ep')
+    print(episode_path)
     should_skip = False
     if output_dir:
         components = os.path.normpath(episode_path).split(os.path.sep)
@@ -289,10 +291,10 @@ class Episodes(object):
 
     """
 
-    def __init__(self, episodes_dir, transform_func=identity):
+    def __init__(self, episodes_dir, transform_func=identity, skip_num=0):
         self.episode_paths = []
         if episodes_dir:
-            self.episode_paths = transform_func(frame_module.episode_paths(episodes_dir))
+            self.episode_paths = transform_func(frame_module.episode_paths(episodes_dir))[skip_num:]
 
     def __iter__(self):
         for episode_path in self.episode_paths:
@@ -440,7 +442,6 @@ def main():
     K_BLOCK = ord('b')
     K_SAVE_VIDEO = ord('v')
     K_ESC = ord('\x1b')  # esc
-    print('K_ESC code:', K_ESC)
     K_SKIP = ord('s')
     K_REMOVE_LABEL = ord('r')
     K_NONE = -1 & 0xFF
@@ -451,6 +452,7 @@ def main():
     if not args.online:
         episode_paths = frame_module.episode_paths(args.frames_dir)
         print("Episodes: {}".format(len(episode_paths)))
+        print(episode_paths)
         if args.reversed:
             episode_paths = reversed(episode_paths)
         if args.random:
@@ -458,6 +460,11 @@ def main():
 
     if args.output_dir:
         os.makedirs(args.output_dir, exist_ok=True)
+        labels = os.listdir(args.output_dir)
+        skip_num = len(labels)
+    else:
+        skip_num = 0
+
 
     episodes_iter = None
     viewer_state = None
@@ -478,16 +485,12 @@ def main():
             transform_func = reversed
         if args.random:
             transform_func = shuffle
-        episodes_iter = Episodes(args.frames_dir, transform_func)
+        episodes_iter = Episodes(args.frames_dir, transform_func, skip_num=skip_num)
         viewer_state = ViewerState(output_dir=args.output_dir)
 
-
-    print('args.output_dir', args.output_dir)
-    print('viewer_state.output_filename', viewer_state.output_filename)
     for episode_path, episode, viewer_state.frame_index in episodes_iter:
-        print('Episode_path:', episode_path)
-        print('episode', episode)
-        print('viewer_state.frame_index', viewer_state.frame_index)
+    
+        print('episode', episode_path)
         
         if episode is None:
             print('Error: no episode')
@@ -516,8 +519,6 @@ def main():
 
             viewer_state.episode_num_in_session = episode.info.get('episode_num', 0)
             viewer_state.env_id = args.env_id if args.env_id else None
-
-            print(viewer_state.episode_num_in_session)
 
         viewer_state.paused = args.pause
         viewer_state.reset_for_episode()
@@ -559,7 +560,6 @@ def main():
 
             cv2.imshow('frame', img)
             k = cv2.waitKey(viewer_state.delay) & 0xFF
-            print('pressed code:', k)
             if args.online and k not in online_key_set:
                 print("Key '{}' not supported in online mode; "
                       "if you want to support it, add it to the keyset.".format(chr(k)))
@@ -571,16 +571,16 @@ def main():
                     print('Exiting...')
                     print('Killing A3C...')
                     call(['tmux', 'kill-session', '-t', 'a3c'])
-                all_label_files = [int(dir_name.split('e')[-1].split('.pkl')[0]) for dir_name in os.listdir(args.output_dir)]
-                if len(all_label_files) == 0:
-                    max_label_num = -1
-                else:
-                    max_label_num = max(all_label_files)
-                output_filename = os.path.join(args.output_dir, 'e' + str(max_label_num + 1)) + '.pkl.gz'
-                if viewer_state.save:
-                    print("Writing episode {} to {}".format(viewer_state.episode_num_in_session, args.output_dir))
-                    save_labels(filename=output_filename, episode=episode, frames=frames)
-                cv2.destroyAllWindows()
+                #all_label_files = [int(dir_name.split('e')[-1].split('.pkl')[0]) for dir_name in os.listdir(args.output_dir)]
+                #if len(all_label_files) == 0:
+                #    max_label_num = -1
+                #else:
+                #    max_label_num = max(all_label_files)
+                #output_filename = os.path.join(args.output_dir, 'e' + str(max_label_num + 1)) + '.pkl.gz'
+                #if viewer_state.save:
+                #    print("Writing episode {} to {}".format(viewer_state.episode_num_in_session, args.output_dir))
+                #    save_labels(filename=output_filename, episode=episode, frames=frames)
+                #cv2.destroyAllWindows()
             elif k == K_CATASTROPHE and args.label_mode == "catastrophe":  # 'c'
                 print('catastrophe!')
                 viewer_state.current_frame.set_label("c")
@@ -679,7 +679,6 @@ def main():
                     viewer_state.advance(online=args.online)
 
 
-        print('ready to save frame')
         if viewer_state.save and not args.dry_run:
             if viewer_state.output_filename is not None:
                 print('Saving to file: {}'.format(viewer_state.output_filename))

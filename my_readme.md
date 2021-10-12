@@ -12,3 +12,15 @@ python train.py --num-workers=1 --online True --online_blocking_mode action_prun
 python train.py --num-workers=4 --env-id Pong --log-dir=../logs/pong_new/ --catastrophe_reward -1 --blocker_file ../models/pong/b2/0/final.ckpt --catastrophe_type 1 --blocking_mode action_replacement - worked
 
 
+
+
+
+
+
+
+
+freeway
+cd univer
+python train.py --num-workers 4 --env-id Freeway --log-dir ../logs/freeway --catastrophe_reward 0
+
+python scripts/human_feedback.py --label_mode block --blocking_mode action_replacement --safe_action 0 -i 3.5 -f logs/freeway/episodes -o logs/freeway/label --env-id Freeway

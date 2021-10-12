@@ -56,6 +56,7 @@ ACTION_MEANING_TO_ACTION = {v: k for k, v in ACTION_MEANING.items()}
 ACTION_SETS = {
     "Pong": [0, 1, 3, 4, 11, 12],
     "SpaceInvaders": [0, 1, 3, 4, 11, 12],
+    "Freeway": [0, 2, 5],
 }
 
 SAFE_ACTION_MAPPINGS = {"SpaceInvaders": {0: 0, 1: 0, 2: 2, 3: 3, 4: 2, 5: 3}}
