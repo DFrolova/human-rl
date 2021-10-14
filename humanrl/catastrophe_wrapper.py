@@ -8,6 +8,7 @@ import numpy as np
 import log_coordinator
 from utils import SAFE_ACTION_MAPPINGS
 
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -234,6 +235,7 @@ blocker + classifier
                 obs, reward, done, info = self.last_obs, 0, False, self.last_info.copy()
             else:
                 obs, reward, done, info = self.env.step(real_action)
+
             self.last_info = info
 
             # Hack for space invaders logging (William)
