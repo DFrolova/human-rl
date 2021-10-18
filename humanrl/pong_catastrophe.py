@@ -20,7 +20,7 @@ PADDLE_COLOR = {"right": np.array([92, 186, 92]), "left": np.array([213, 130, 74
 PLAY_AREA = [34, 34 + 160]
 DEFAULT_CLEARANCE = 16
 DEFAULT_BLOCK_CLEARANCE = 16
-DEFAULT_LOCATION = "bottom"
+DEFAULT_LOCATION = "two_sides"
 
 
 def paddle_bottom(observation, paddle="right"):
@@ -91,13 +91,33 @@ def is_catastrophe(obs, location=DEFAULT_LOCATION, clearance=DEFAULT_CLEARANCE):
 
 ##catastrophe zone on either side
 # def is_catastrophe(obs, location=DEFAULT_LOCATION, clearance=DEFAULT_CLEARANCE):
-#     clearance = 5
+# #     clearance = 5
 #     y = paddle_bottom(obs)
 #     y2 = paddle_top(obs)
 #     if y is None:
 #         return False
 #     return (y > PLAY_AREA[1] - clearance) or (y < PLAY_AREA[0] + clearance)
     
+
+
+# def should_block(obs,
+#                  action,
+#                  location=DEFAULT_LOCATION,
+#                  clearance=DEFAULT_CLEARANCE,
+#                  block_clearance=DEFAULT_BLOCK_CLEARANCE):
+#     if obs is None:
+#         return False
+#     if is_catastrophe(obs, location, clearance):
+#         return False
+#     if location == "top":
+#         # DOWN
+#         if is_catastrophe(obs, location, clearance + block_clearance) and action != 5:
+#             return True
+#     elif location == "bottom":
+#         # UP
+#         if is_catastrophe(obs, location, clearance + block_clearance) and action != 2:
+#             return True
+#     return False
 
 
 def should_block(obs,
@@ -117,16 +137,39 @@ def should_block(obs,
         # UP
         if is_catastrophe(obs, location, clearance + block_clearance) and action != 2:
             return True
+    elif location == "two_sides":
+        if is_catastrophe(obs, location="top", clearance + block_clearance) and action != 5:
+            return True
+        if is_catastrophe(obs, location="bottom", clearance + block_clearance) and action != 2:
+            return True
     return False
 
 
-def allowed_actions_heuristic(obs, location):
+# def allowed_actions_heuristic(obs, location):    
+#     if location == "top":
+#         return [5]
+#     elif location == "bottom":
+#         return [2]
+
+
+def allowed_actions_heuristic(obs, location, clearance=DEFAULT_CLEARANCE+DEFAULT_BLOCK_CLEARANCE):  
     if location == "top":
         return [5]
     elif location == "bottom":
         return [2]
-
-
+    elif location == "two_sides":
+        y = paddle_top(obs)
+        if y is None:
+            print('warning!!!! None allowed action heuristic!!!!!')
+            
+            return [0]
+        if y < PLAY_AREA[0] + clearance:
+            return [5]
+        y = paddle_bottom(obs)
+        if y > PLAY_AREA[1] - clearance:
+            return [2]
+        
+    
 class CatastropheClassifierHeuristic(object):
     def __init__(self, location=DEFAULT_LOCATION, clearance=DEFAULT_CLEARANCE, **_):        
         self.location = location
@@ -159,7 +202,6 @@ class CatastropheClassifierHeuristic(object):
 #                     return True
 #         return False
 
-
 class CatastropheBlockerHeuristic(object):
     def __init__(self,
                  location=DEFAULT_LOCATION,
@@ -186,7 +228,7 @@ class PongClassifierLabeller(object):
 
     def label(self, features, episode):
         images = (frame.image for frame in episode.frames if frame.action is not None)
-        labels = np.array([is_catastrophe(image, location="bottom") for image in images])
+        labels = np.array([is_catastrophe(image, location="two_sides") for image in images])
         return features, labels
 
 
@@ -201,11 +243,27 @@ class PongBlockerClearanceHeuristicLabeller(object):
         self.block_clearance = block_clearance
         self.blocker = CatastropheBlockerHeuristic(location, clearance, block_clearance)
 
+#     def __block_with_clearance(self, obs, action, location, clearance, block_clearance):
+#         if is_catastrophe(obs, location, clearance + block_clearance) and action != 2:   # 'up' action
+#             return True
+#         else:
+#             return False
+
     def __block_with_clearance(self, obs, action, location, clearance, block_clearance):
-        if is_catastrophe(obs, location, clearance + block_clearance) and action != 2:   # 'up' action
-            return True
-        else:
-            return False
+        if location == "top":
+            # DOWN
+            if is_catastrophe(obs, location, clearance + block_clearance) and action != 5:
+                return True
+        elif location == "bottom":
+            # UP
+            if is_catastrophe(obs, location, clearance + block_clearance) and action != 2:
+                return True
+        elif location == "two_sides":
+            if is_catastrophe(obs, location="top", clearance + block_clearance) and action != 5:
+                return True
+            if is_catastrophe(obs, location="bottom", clearance + block_clearance) and action != 2:
+                return True
+        return False
 
     def label(self, features, episode):
         labels = np.array(
@@ -233,8 +291,6 @@ class PongBlockerLabeller(object):
         labels = np.full(len(is_catastrophe_array), fill_value=False, dtype=np.bool)
         mask = np.full(len(is_catastrophe_array), fill_value=True, dtype=np.bool)
         
-        print(len(labels), len(mask))
-
         # CHANGED
         # for i in range(len(episode.frames)):
         for i in range(len(is_catastrophe_array)):
@@ -258,4 +314,3 @@ class PongBlockerLabeller(object):
             assert (len(labels) == len(features[key])), "{} {}".format(
                 len(labels), len(features[key]))
         return features, labels
-        # return features, labels
