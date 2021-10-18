@@ -555,6 +555,8 @@ def make_env(env_id, deterministic=True, v=3, **unused):
     if deterministic:
         env_id += "Deterministic"
     env_id += "-v%d" % v
+    
+    print(env_id)
 
     return gym.make(env_id)
 

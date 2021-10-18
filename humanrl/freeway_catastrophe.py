@@ -85,7 +85,6 @@ def allowed_actions_heuristic(obs):
     return [0]
 
 class CatastropheClassifierHeuristic(object):
-    def __init__(self):
 
     def is_catastrophe(self, obs):       
         return is_catastrophe(obs)
@@ -95,7 +94,6 @@ class CatastropheClassifierHeuristic(object):
 
 
 class CatastropheBlockerHeuristic(object):
-    def __init__(self):
 
     def should_block(self, obs, action):
         return should_block(obs, action)
