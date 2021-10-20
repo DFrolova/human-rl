@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--logdir', type=str, default="")
 
-    episode_paths = frame.episode_paths("logs/PongDeterministic-v3-Episodes")
+    episode_paths = frame.episode_paths("logs/pong/episodes")
     np.random.seed(seed=42)
     np.random.shuffle(episode_paths)
     data_loader = DataLoader(pong_catastrophe.PongClassifierLabeller())
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     else:
         logdir = args.logdir
     hparams_list = [
-        dict(batch_size=1024),
+        dict(batch_size=64),
         # dict(image_crop_region=((34,34+160),(0,160)), batch_size=1),
         # dict(convolution2d_stack_args=[(4, [3, 3], [2, 2])] * 5, batch_size=1),
         # dict(image_crop_region=((34,34+160),(0,160)), convolution2d_stack_args=[(4, [3, 3], [2, 2])] * 5, batch_size=1),

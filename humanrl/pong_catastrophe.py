@@ -18,8 +18,8 @@ TOLERANCE = 0.01
 PADDLE_COLUMN = {"right": 143, "left": 16}
 PADDLE_COLOR = {"right": np.array([92, 186, 92]), "left": np.array([213, 130, 74])}
 PLAY_AREA = [34, 34 + 160]
-DEFAULT_CLEARANCE = 16
-DEFAULT_BLOCK_CLEARANCE = 16
+DEFAULT_CLEARANCE = 1
+DEFAULT_BLOCK_CLEARANCE = 1
 DEFAULT_LOCATION = "two_sides"
 
 
@@ -86,6 +86,12 @@ def is_catastrophe(obs, location=DEFAULT_LOCATION, clearance=DEFAULT_CLEARANCE):
         if y is None:
             return False
         return y < PLAY_AREA[0] + clearance
+    elif location == "two_sides":
+        y = paddle_bottom(obs)
+        y1 = paddle_top(obs)
+        if y is None:
+            return False
+        return y > PLAY_AREA[1] - clearance or y1 < PLAY_AREA[0] + clearance
     else:
         raise ValueError("Unrecognized location: {}".format(location))
 
@@ -138,9 +144,9 @@ def should_block(obs,
         if is_catastrophe(obs, location, clearance + block_clearance) and action != 2:
             return True
     elif location == "two_sides":
-        if is_catastrophe(obs, location="top", clearance + block_clearance) and action != 5:
+        if is_catastrophe(obs, location="top", clearance=clearance + block_clearance) and action != 5:
             return True
-        if is_catastrophe(obs, location="bottom", clearance + block_clearance) and action != 2:
+        if is_catastrophe(obs, location="bottom", clearance=clearance + block_clearance) and action != 2:
             return True
     return False
 
@@ -259,9 +265,9 @@ class PongBlockerClearanceHeuristicLabeller(object):
             if is_catastrophe(obs, location, clearance + block_clearance) and action != 2:
                 return True
         elif location == "two_sides":
-            if is_catastrophe(obs, location="top", clearance + block_clearance) and action != 5:
+            if is_catastrophe(obs, location="top", clearance=clearance + block_clearance) and action != 5:
                 return True
-            if is_catastrophe(obs, location="bottom", clearance + block_clearance) and action != 2:
+            if is_catastrophe(obs, location="bottom", clearance=clearance + block_clearance) and action != 2:
                 return True
         return False
 
