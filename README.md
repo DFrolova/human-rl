@@ -103,17 +103,3 @@ python train.py --num-workers=4 --env-id Freeway --log-dir $log_dir --catastroph
 See [the human feedback README](https://github.com/gsastry/human-rl/tree/master/scripts/README.md) for directions on providing human feedback with the OpenAI universe starter agent.
 
 See the [catastrophe wrapper](https://github.com/gsastry/human-rl/blob/master/humanrl/catastrophe_wrapper.py) for a general purpose way to add catastrophes to Gym environments.
-
-
-
-
-
-
-
-freeway
-cd univer
-python train.py --num-workers 4 --env-id Freeway --log-dir ../logs/freeway --catastrophe_reward 0
-
-python scripts/human_feedback.py --label_mode block --blocking_mode action_replacement --safe_action 0 -i 3.5 -f logs/freeway/episodes -o logs/freeway/label --env-id Freeway
-
-python train.py --num-workers 4 --env-id Freeway --log-dir ../logs/freeway_block --catastrophe_reward -1 --catastrophe_type 1 --blocking_mode action_replacement
