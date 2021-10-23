@@ -65,7 +65,8 @@ To run A3C without any catastrophe penalties/blocking:
 
 ```
 cd universe_starter_agent
-python train.py --num-workers 4 --env-id Pong --log-dir $log_dir --catastrophe_reward 0```
+python train.py --num-workers 4 --env-id Pong --log-dir $log_dir --catastrophe_reward 0
+```
 
 The script `train.py` starts the workers (and is not modified from the original). This calls `worker.py` which creates a gym env and runs A3C on the env. The script `envs.py` is where the env is constructed and where catastrophe wrappers are added. In the above command (where we didn't set a `catastrophe_type` argument), the only wrapper used is `frame.FrameSaveWrapper`, which just saves the frames.
 
@@ -94,7 +95,8 @@ Penalties can be provided either by a hand-coded labeller or a TF classifier. Fo
 
 ```
 cd universe_starter_agent
-python train.py --num-workers=4 --env-id Freeway --log-dir $log_dir --catastrophe_reward -1 --blocker_file $blocker_file --classifier_file $classifier_file --catastrophe_type 1 --blocking_mode action_replacement```
+python train.py --num-workers=4 --env-id Freeway --log-dir $log_dir --catastrophe_reward -1 --blocker_file $blocker_file --classifier_file $classifier_file --catastrophe_type 1 --blocking_mode action_replacement
+```
 
 ## Other info
 
